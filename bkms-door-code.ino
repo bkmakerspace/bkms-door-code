@@ -49,6 +49,9 @@ void setup(void) {
   randomSeed(analogRead(0));
 
   lcd.init();
+  lcd.backlight();
+
+  printLoading("INIT NFC...");
 
   while(1) {
     nfc.begin();
@@ -64,6 +67,7 @@ void setup(void) {
   // configure board to read RFID tags
   nfc.SAMConfig();
 
+  printLoading("INIT NETWORK...");
   // start the Ethernet connection:
   Serial.println("Initialize Ethernet with DHCP:");
   if (Ethernet.begin(mac) == 0) {
@@ -77,12 +81,10 @@ void setup(void) {
   // give the Ethernet shield a second to initialize:
   delay(1000);
 
+  printLoading("INIT KEYS...");
   getNewKey();
   
   Serial.println("Waiting for an ISO14443A Card ...");
-  lcd.backlight();
-  
-  
 
   printReadyMessage();
 }
