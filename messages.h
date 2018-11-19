@@ -42,3 +42,12 @@ void printFailMessage(const char* name, const char* message) {
   lcd.setCursor(0,1);
   lcd.print(message);
 }
+
+
+void printLoading(const char* msg) {
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("LOADING...");
+  lcd.setCursor(0,1);
+  lcd.print(msg);
+}
