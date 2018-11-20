@@ -9,5 +9,6 @@ before_install:
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
   - arduino --install-library "LiquidCrystal I2C"
+  - arduino --install-library "Adafruit PN532"
 script:
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/bkms-door-code.ino
