@@ -11,4 +11,5 @@ install:
   - arduino --install-library "LiquidCrystal I2C"
   - arduino --install-library "Adafruit PN532"
 script:
+  - cp $PWD/example-bkms-secrets.h $PWD/bkms-secrets.h
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/bkms-door-code.ino
