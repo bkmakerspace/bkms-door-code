@@ -8,5 +8,6 @@ before_install:
   - sudo mv arduino-1.8.7 /usr/local/share/arduino
   - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
+  - arduino --install-library "LiquidCrystal I2C"
 script:
   - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/bkms-door-code.ino
