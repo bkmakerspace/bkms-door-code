@@ -1,0 +1,27 @@
+FROM ubuntu
+
+#==============
+# VNC and Xvfb
+#==============
+RUN apt-get update -y \
+  && apt-get -y install \
+    xvfb \
+    wget \
+    xz-utils \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+RUN mkdir arduino
+WORKDIR arduino
+
+RUN wget http://downloads.arduino.cc/arduino-1.8.7-linux64.tar.xz &&\
+    tar xf arduino-1.8.7-linux64.tar.xz &&\
+    mv arduino-1.8.7 /usr/local/share/arduino &&\
+    ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+
+ENTRYPOINT ["arduino"]
+CMD ["--verify", "--board", "arduino:avr:mega:cpu=atmega2560", "bkms-door-code.ino"]
+
+RUN arduino --install-library "LiquidCrystal I2C"
+RUN arduino --install-library "Adafruit PN532"
+
+COPY . .
