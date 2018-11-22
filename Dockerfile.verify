@@ -25,3 +25,5 @@ RUN arduino --install-library "LiquidCrystal I2C"
 RUN arduino --install-library "Adafruit PN532"
 
 COPY . .
+
+RUN cp example-bkms-secrets.h bkms-secrets.h
