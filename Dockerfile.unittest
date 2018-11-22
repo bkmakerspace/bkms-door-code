@@ -1,0 +1,52 @@
+FROM ubuntu
+
+RUN apt-get update -y \
+  && apt-get -y install \
+    git \
+    wget \
+    g++ \
+    xz-utils \
+  && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+ENV GTEST_DIR=./googletest/googletest
+ENV GMOCK_DIR=./googletest/googlemock
+
+RUN mkdir unittest
+WORKDIR unittest
+
+RUN git clone https://github.com/abseil/googletest.git
+
+RUN g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} \
+        -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} \
+        -pthread -c ${GTEST_DIR}/src/gtest-all.cc &&\
+    g++ -isystem ${GTEST_DIR}/include -I${GTEST_DIR} \
+        -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} \
+        -pthread -c ${GMOCK_DIR}/src/gmock-all.cc &&\
+    ar -rv libgmock.a gtest-all.o gmock-all.o
+
+RUN wget http://downloads.arduino.cc/arduino-1.8.7-linux64.tar.xz &&\
+    tar xf arduino-1.8.7-linux64.tar.xz
+
+COPY . .
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./test/mocks/Arduino.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./test/mocks/WString.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./makeyRequest.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./test/makeyRequestTest.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread Arduino.o WString.o makeyRequest.o makeyRequestTest.o libgmock.a ./test/tests.cpp -o tests
+
+CMD ["./tests"]

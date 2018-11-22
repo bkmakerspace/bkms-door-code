@@ -1,15 +1,10 @@
-language: c
-before_install:
-  - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
-  - sleep 3
-  - export DISPLAY=:1.0
-  - wget http://downloads.arduino.cc/arduino-1.8.7-linux64.tar.xz
-  - tar xf arduino-1.8.7-linux64.tar.xz
-  - sudo mv arduino-1.8.7 /usr/local/share/arduino
-  - sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
+language: c++
+sudo: required
+services:
+  - docker
 install:
-  - arduino --install-library "LiquidCrystal I2C"
-  - arduino --install-library "Adafruit PN532"
+  - docker build -t arduino_verify . -f Dockerfile.verify
+  - docker build -t arduino_uts . -f Dockerfile.unittest
 script:
-  - cp $PWD/example-bkms-secrets.h $PWD/bkms-secrets.h
-  - arduino --verify --board arduino:avr:mega:cpu=atmega2560 $PWD/bkms-door-code.ino
+  - docker run arduino_verify
+  - docker run arduino_uts

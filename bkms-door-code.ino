@@ -12,6 +12,7 @@
  */
 #include "bkms-secrets.h"
 #include "config.h"
+#include "makeyRequest.h"
 
 // Set the static IP address to use if the DHCP fails to assign
 IPAddress ip(192, 168, 0, 177);
@@ -27,15 +28,14 @@ Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
 LiquidCrystal_I2C lcd(0x27,20,4);
 
 #include "messages.h"
-#include "makeyRequest.h"
 
 uint8_t nextKey[16];
 
 void getNewKey() {
-  MakeyResponse res = makeyRequest("/hubot/randombytes", {}, 0, "", 20000);
+  MakeyResponse res = makeyRequest(&client, "/hubot/randombytes", {}, 0, "", 20000);
 
   while(res.statusCode != 200) {
-    res = makeyRequest("/hubot/randombytes", {}, 0, "", 20000);
+    res = makeyRequest(&client, "/hubot/randombytes", {}, 0, "", 20000);
   }
   memcpy(nextKey, res.body.c_str(), 16);
 }
@@ -58,8 +58,8 @@ void setup(void) {
     uint32_t versiondata = nfc.getFirmwareVersion();
     if (versiondata) {
       // Got ok data, print it out!
-      Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX); 
-      Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC); 
+      Serial.print("Found chip PN5"); Serial.println((versiondata>>24) & 0xFF, HEX);
+      Serial.print("Firmware ver. "); Serial.print((versiondata>>16) & 0xFF, DEC);
       Serial.print('.'); Serial.println((versiondata>>8) & 0xFF, DEC);
       break;
     }
@@ -83,7 +83,7 @@ void setup(void) {
 
   printLoading("INIT KEYS...");
   getNewKey();
-  
+
   Serial.println("Waiting for an ISO14443A Card ...");
 
   printReadyMessage();
@@ -94,14 +94,14 @@ void readCard(void) {
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
   uint8_t data[16];
   uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  
+
   printReadyMessage();
-    
+
   // Wait for an ISO14443A type cards (Mifare, etc.).  When one is found
   // 'uid' will be populated with the UID, and uidLength will indicate
   // if the uid is 4 bytes (Mifare Classic) or 7 bytes (Mifare Ultralight)
   success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
-  
+
   if (success) {
     // Display some basic information about the card
     Serial.println("Found an ISO14443A card");
@@ -132,7 +132,7 @@ void readCard(void) {
           data[3] = SECRET_KEY[3];
           data[4] = SECRET_KEY[4];
           data[5] = SECRET_KEY[5];
-  
+
           success = nfc.mifareclassic_WriteDataBlock(7, data);
           Serial.println("Wrote key");
           success = nfc.mifareclassic_WriteDataBlock(4, nextKey);
@@ -157,7 +157,7 @@ void readCard(void) {
           //state = STATE_VERIFYING;
           printVerify2Message();
           //startRequest();
-                
+
           // Make a HTTP request:
           char buffer[14];
           char buffer2[33];
@@ -185,7 +185,7 @@ void readCard(void) {
                 , data[14]
                 , data[15]);
           const char* headers[] = {"Host: makey.localdomain", "Connection: close", "Content-Type: text/plain;charset=UTF-8", "Content-Length: 32"};
-          MakeyResponse res = makeyRequest(buffer, headers, 4, buffer2, 60000);
+          MakeyResponse res = makeyRequest(&client, buffer, headers, 4, buffer2, 60000);
 
           if(res.statusCode == 200) {
             Serial.println("Accepted!");
@@ -205,7 +205,7 @@ void readCard(void) {
           }
         }
       }
-      
+
       if(!success) {
         Serial.println("Invalid card!");
         printServerFailMessage();
