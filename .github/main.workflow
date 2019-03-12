@@ -1,4 +1,4 @@
-workflow "New workflow" {
+workflow "Build and verify on push" {
   on = "push"
   resolves = ["GitHub Action for Docker-1"]
 }
