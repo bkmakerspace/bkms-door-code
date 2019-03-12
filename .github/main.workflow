@@ -1,6 +1,9 @@
 workflow "Build and verify on push" {
   on = "push"
-  resolves = ["Unit Tests"]
+  resolves = [
+    "Unit Tests",
+    "GitHub Action for Docker-1",
+  ]
 }
 
 action "Verification Docker Build" {
@@ -16,12 +19,11 @@ action "Arduino Verify" {
 
 action "Unit Test Docker Build" {
   uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  needs = ["Arduino Verify"]
   args = " build -t pipakin/bkms_door_code_uts . -f Dockerfile.unittest"
 }
 
 action "Unit Tests" {
   uses = "actions/docker/cli@8cdf801b322af5f369e00d85e9cf3a7122f49108"
   needs = ["Unit Test Docker Build"]
-  args = "docker run pipakin/bkms_door_code_uts"
+  args = "run pipakin/bkms_door_code_uts"
 }
