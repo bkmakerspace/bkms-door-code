@@ -2,7 +2,7 @@ workflow "Build and verify on push" {
   on = "push"
   resolves = [
     "Unit Tests",
-    "GitHub Action for Docker-1",
+    "Arduino Verify",
   ]
 }
 
