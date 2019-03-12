@@ -30,23 +30,39 @@ RUN wget http://downloads.arduino.cc/arduino-1.8.7-linux64.tar.xz &&\
 COPY . .
 
 RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
-        -isystem ./test/mocks \
-        -pthread -c ./test/mocks/Arduino.cpp
+    -isystem ./test/mocks \
+    -pthread -c ./test/mocks/Arduino.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+    -isystem ./test/mocks \
+    -pthread -c ./test/mocks/WString.cpp
 
 RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
         -isystem ./test/mocks \
-        -pthread -c ./test/mocks/WString.cpp
+        -pthread -c ./makey.cpp
 
 RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
         -isystem ./test/mocks \
-        -pthread -c ./makeyRequest.cpp
+        -pthread -c ./ethernetMaintainer.cpp
 
 RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
         -isystem ./test/mocks \
-        -pthread -c ./test/makeyRequestTest.cpp
+        -pthread -c ./doorDisplay.cpp
 
 RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
         -isystem ./test/mocks \
-        -pthread Arduino.o WString.o makeyRequest.o makeyRequestTest.o libgmock.a ./test/tests.cpp -o tests
+        -pthread -c ./test/makeyTests.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./test/EthernetMaintainerTests.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread -c ./test/DoorDisplayTests.cpp
+
+RUN g++ -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include \
+        -isystem ./test/mocks \
+        -pthread Arduino.o WString.o makey.o ethernetMaintainer.o doorDisplay.o makeyTests.o EthernetMaintainerTests.o DoorDisplayTests.o libgmock.a ./test/tests.cpp -o tests
 
 CMD ["./tests"]
